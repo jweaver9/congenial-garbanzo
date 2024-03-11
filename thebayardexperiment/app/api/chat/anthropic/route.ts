@@ -1,23 +1,27 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
-import { AnthropicStream, StreamingTextResponse } from 'ai';
+// Import the necessary SDK and utilities
 import Anthropic from '@anthropic-ai/sdk';
-// Assume AnthropicStream and StreamingTextResponse are utilities you've defined for handling streaming.
+import { AnthropicStream, StreamingTextResponse } from 'ai';
 
+// Set the runtime to Edge for improved performance
+export const runtime = 'edge';
+
+// Create an Anthropic API client
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
 
-// Assign the async function to a variable before exporting it.
-export const routeHandler = async (req: VercelRequest, res: VercelResponse) => {
+// Unified async handler for POST requests
+export async function handler(req: Request): Promise<Response> {
   try {
-    const { messages } = req.body; 
+    // Parse the request JSON body
+    const { messages } = await req.json();
 
-    // Validating the input
-    if (!messages || !Array.isArray(messages) || messages.some(msg => typeof msg.content !== 'string')) {
-      return res.status(400).json({ error: 'Invalid message format' });
+    // Validate the input
+    if (!messages || !Array.isArray(messages) || messages.some(msg => typeof msg !== 'string' && typeof msg.content !== 'string')) {
+      return new Response(JSON.stringify({ error: 'Invalid message format' }), { status: 400 });
     }
 
-    // Assuming 'messages' structure fits Anthropic's API requirements
+    // Make a request to the Anthropic API
     const response = await anthropic.messages.create({
       messages,
       model: 'claude-2.1',
@@ -25,20 +29,13 @@ export const routeHandler = async (req: VercelRequest, res: VercelResponse) => {
       max_tokens: 300,
     });
 
-    // Let's assume AnthropicStream modifies or processes 'response' to be sent back properly. 
-    // Ensure this function exists and correctly handles the response for your needs.
+    // Convert the API response into a stream
     const stream = AnthropicStream(response);
 
-    // Assuming StreamingTextResponse properly wraps 'stream' for the response.
-    // This part may need adjustment based on your actual StreamingTextResponse implementation.
+    // Return the streaming response
     return new StreamingTextResponse(stream);
-
   } catch (error) {
     console.error('Error from Anthropic:', error);
-    return res.status(500).json({ error: 'Failed to process request' });
+    return new Response(JSON.stringify({ error: 'Failed to process request', details: error }), { status: 500 });
   }
-};
-
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  return routeHandler(req, res);
 }
