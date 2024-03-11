@@ -1,8 +1,7 @@
-import { AnthropicStream, StreamingTextResponse, OpenAIStream } from 'ai';
-import { NextResponse } from 'next/server';
-import { experimental_buildAnthropicPrompt } from 'ai/prompts';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
+import { OpenAIStream, AnthropicStream } from 'ai';
+import { experimental_buildAnthropicPrompt } from 'ai/prompts';
 
 // Initialize both AI Clients
 const openai = new OpenAI({
@@ -20,44 +19,48 @@ export async function POST(req: Request) {
 
   // Basic input validation
   if (!messages || !Array.isArray(messages) || messages.length === 0 || !service) {
-    return NextResponse.json({ error: 'Invalid or missing input data.' }, { status: 400 });
+    return new Response(JSON.stringify({ error: 'Invalid or missing input data.' }), { status: 400 });
   }
 
   try {
-    let response, stream;
+    let streamResponse;
 
     switch(service) {
       case 'openai':
-        // Use OpenAI's chat completion
-        response = await openai.chat.completions.create({
-          model: 'text-davinci-003', // Specify your desired OpenAI model
-          messages: messages.map(msg => msg.content), // Use 'messages' instead of 'prompt'
+        const responseOpenAI = await openai.chat.completions.create({
+          model: 'text-davinci-003',
+          messages: messages.map(msg => ({ role: msg.role, content: msg.content })),
           stream: true,
-          max_tokens: 300, // Example parameter
+          max_tokens: 300,
         });
-        stream = OpenAIStream(response);
+
+        // Correctly handle the streaming data from OpenAI's response
+        // Assuming OpenAIStream is a function you've defined to format or process the stream
+        streamResponse = OpenAIStream(responseOpenAI); // Directly pass the entire response
         break;
 
       case 'anthropic':
-        // Use Anthropic's completion
-        const prompt = experimental_buildAnthropicPrompt(messages);
-        response = await anthropic.completions.create({
+        const prompt = experimental_buildAnthropicPrompt(messages.map(msg => msg.content));
+        const responseAnthropic = await anthropic.completions.create({
           prompt,
-          model: 'claude-2', // Specifying the model
+          model: 'claude-2',
           stream: true,
-          max_tokens_to_sample: 300, // Example parameter
+          max_tokens_to_sample: 300,
         });
-        stream = AnthropicStream(response);
+
+        // Correctly handle the streaming data from Anthropic's response
+        // Assuming AnthropicStream is a function you've defined to format or process the stream
+        streamResponse = AnthropicStream(responseAnthropic); // Directly pass the entire response
         break;
 
       default:
-        return NextResponse.json({ error: 'Unsupported AI service specified.' }, { status: 400 });
+        return new Response(JSON.stringify({ error: 'Unsupported AI service specified.' }), { status: 400 });
     }
 
-    return new StreamingTextResponse(stream);
+    // Ensure streamResponse is formatted correctly for your use case
+    return streamResponse;
   } catch (error) {
     console.error('Error handling request:', error);
-    const genericErrorMessage = 'An error occurred while processing your request.';
-    return NextResponse.json({ error: 'ServerError', message: genericErrorMessage }, { status: 500 });
+    return new Response(JSON.stringify({ error: 'ServerError', message: 'An error occurred while processing your request.' }), { status: 500 });
   }
 }
