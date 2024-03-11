@@ -1,4 +1,8 @@
+// page.tsx
+
 import Image from "next/image";
+import React from "react";
+import metadata from "metadata"
 
 export default function Home() {
   return (
