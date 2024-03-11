@@ -7,7 +7,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
 
-export default async (req: VercelRequest, res: VercelResponse) => {
+export const routeHandler = async (req: VercelRequest, res: VercelResponse) => {
   try {
     const { messages } = req.body; // Direct use of 'req.body' assuming Vercel environment.
 

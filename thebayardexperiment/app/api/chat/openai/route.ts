@@ -26,4 +26,4 @@ const routeHandler = async (req: VercelRequest, res: VercelResponse) => {
 };
 
 // Export the route handler
-export default routeHandler;
+export { routeHandler };
