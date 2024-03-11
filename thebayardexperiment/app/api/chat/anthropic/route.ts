@@ -1,68 +1,37 @@
-import OpenAI from 'openai';
+import { VercelRequest, VercelResponse } from '@vercel/node';
+import { AnthropicStream, StreamingTextResponse } from 'ai';
 import Anthropic from '@anthropic-ai/sdk';
-import { OpenAIStream, AnthropicStream, StreamingTextResponse } from 'ai';
-import ChatCompletionMessageParam  from 'openai';
+// Ensure AnthropicStream and StreamingTextResponse are correctly defined and imported.
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY || '' });
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
+});
 
-export const runtime = 'edge';
-
-interface GeneralMessage {
-    role: string;
-    content: string;
-}
-
-// Assume that StreamResponse is the correct return type for both AnthropicStream and OpenAIStream
-type StreamResponse = AsyncIterable<any> | null; 
-
-async function getStream(provider: string, messages: GeneralMessage[]): Promise<StreamResponse> {
-    if (provider === 'openai') {
-        const openaiMessages = messages.map(m => ({
-            role: m.role === 'user' ? 'user' : 'assistant',
-            content: m.content,
-        }));
-        const response = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
-            messages: openaiMessages,
-        });
-        return OpenAIStream(response);
-    } else if (provider === 'anthropic') {
-        // Mapping directly without unnecessary casting
-        const anthropicMessages = messages.map(({ content }) => ({ content }));
-        const response = await anthropic.messages.create({
-            messages: anthropicMessages,
-            model: 'claude-2.1',
-            max_tokens: 300,
-        });
-        return AnthropicStream(response);
-    }
-    return null;
-}
-
-export async function POST(req: Request) {
+export default async (req: VercelRequest, res: VercelResponse) => {
   try {
-    const { messages, provider } = await req.json();
-    if (!messages || !messages.length || !provider) {
-      return new Response(JSON.stringify({ error: 'Invalid request parameters' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    const { messages } = req.body; // Direct use of 'req.body' assuming Vercel environment.
+
+    // Input validation (if necessary)
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ error: 'Invalid message format' });
     }
 
-    const stream = await getStream(provider, messages);
-    if (stream) {
-        // Assuming StreamingTextResponse can accept StreamResponse directly or through some processing/wrapping
-        return new StreamingTextResponse(stream);
-    } else {
-        return new Response(JSON.stringify({ error: 'Unsupported provider or failed to get stream' }), {
-            status: 400, headers: { 'Content-Type': 'application/json' }
-        });
-    }
-  } catch (error) {
-    console.error(`Request processing failed due to:`, error);
-    return new Response(JSON.stringify({ error: `Request processing failure` }), {
-      status: 500, headers: { 'Content-Type': 'application/json' }
+    // Perform the Anthropic API call
+    const response = await anthropic.messages.create({
+      messages,
+      model: 'claude-2.1',
+      stream: true,
+      max_tokens: 300,
     });
+
+    // Handle the response, assuming that AnthropicStream properly wraps the response for Vercel compatibility.
+    const stream = AnthropicStream(response); // Ensure this fits your implementation.
+    
+    // Return the stream as the response, or adapt as necessary for your context.
+    return new StreamingTextResponse(stream); // Adjust based on actual implementation suitability.
+
+  } catch (error) {
+    console.error('Error from Anthropic:', error);
+    return res.status(500).json({ error: 'Failed to process request' });
   }
-}
+};
