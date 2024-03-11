@@ -4,7 +4,7 @@ import {
   experimental_StreamData,
 } from 'ai';
 import OpenAI from 'openai';
-import type { ChatCompletionCreateParams } from 'openai/resources/chat';
+import ChatCompletionCreateParams from 'openai'
 
 // Create an OpenAI API client (that's edge friendly!)
 const openai = new OpenAI({

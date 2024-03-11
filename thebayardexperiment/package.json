@@ -18,7 +18,8 @@
     "open": "^10.1.0",
     "openai": "^4.28.4",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "readable-stream": "^4.5.2"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",
