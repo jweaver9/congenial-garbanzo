@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import React from "react";
-import metadata from "metadata"
+import { metadata } from "@/app/metadata";
 
 export {metadata}; // This is the metadata object from thebayardexperiment/app/metadata.tsx
 
