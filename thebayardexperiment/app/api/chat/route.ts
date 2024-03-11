@@ -1,4 +1,4 @@
-import OpenAI from gi;
+import OpenAI from 'openai';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 
 // Assuming these are the correct imports based on your example
