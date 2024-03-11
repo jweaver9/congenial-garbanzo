@@ -1,48 +1,61 @@
 import OpenAI from 'openai';
-import { OpenAIStream, StreamingTextResponse } from 'ai';
+import Anthropic from a;
+import { OpenAIStream, AnthropicStream, StreamingTextResponse } from 'ai';
 
-// Assuming these are the correct imports based on your example
-// Make sure to adjust according to the actual packages you're using
-
-// Create an OpenAI API client
+// Create API clients
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || '',
+});
 
-// Set the runtime to edge for best performance
+// Unified endpoint to handle requests for both OpenAI and Anthropic
 export const runtime = 'edge';
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json();
+    const { messages, provider } = await req.json(); // `provider` can be 'openai' or 'anthropic'
 
     // Input validation
-    if (!messages || !messages.length) {
-      return new Response(JSON.stringify({ error: 'No messages provided' }), {
+    if (!messages || !messages.length || !provider) {
+      return new Response(JSON.stringify({ error: 'Invalid request parameters' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    
+    let response;
+    if (provider === 'openai') {
+      // Processing with OpenAI
+      response = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        stream: true,
+        messages,
+      });
+    } else if (provider === 'anthropic') {
+      // Processing with Anthropic
+      response = await anthropic.messages.create({
+        messages,
+        model: 'claude-2.1',
+        stream: true,
+        max_tokens: 300,
+      });
+    } else {
+      return new Response(JSON.stringify({ error: 'Unsupported provider' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // Ask OpenAI for a streaming chat completion given the prompt
-    const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      stream: true,
-      messages,
-    });
-
-    // Process and potentially augment the response here before streaming
-    // For example, filtering profanity, augmenting with additional data, etc.
-
-    // Convert the response into a friendly text-stream
-    const stream = OpenAIStream(response);
+    // Adjust the streaming utility based on the selected provider
+    const stream = (provider === 'openai') ? OpenAIStream(response) : AnthropicStream(response);
 
     // Respond with the stream
     return new StreamingTextResponse(stream);
   } catch (error) {
-    console.error('Failed to get completion from OpenAI:', error);
-    // Return a meaningful error message to the client
-    return new Response(JSON.stringify({ error: 'Failed to process request' }), {
+    console.error(`Failed to get completion from ${provider}:`, error);
+    return new Response(JSON.stringify({ error: `Failed to process request with ${provider}` }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
