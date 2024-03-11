@@ -43,7 +43,7 @@ const metadataBase: URL = new URL(process.env.VERCEL_URL ? `https://${process.en
 // Construct the full metadata object
 const metadata: ExtendedMetadata = {
   title: 'THE BAYARD EXPERIMENT',
-  description: 'An AI-powered chatbot template built with Next.js and Vercel.',
+  description: 'A conceptual project.',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon-16x16.png',
