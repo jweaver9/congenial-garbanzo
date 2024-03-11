@@ -12,6 +12,7 @@
     "@anthropic-ai/sdk": "^0.17.1",
     "@vercel/node": "^3.0.22",
     "ai": "^3.0.8",
+    "anthropic": "^0.0.0",
     "body-parser": "^1.20.2",
     "express": "^4.18.3",
     "next": "14.1.3",
