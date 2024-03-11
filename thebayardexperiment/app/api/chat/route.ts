@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import Anthropic from a;
+import Anthropic from '@anthropic-ai/sdk';
 import { OpenAIStream, AnthropicStream, StreamingTextResponse } from 'ai';
 
 // Create API clients
