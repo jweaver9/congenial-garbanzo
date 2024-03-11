@@ -1,22 +1,23 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { AnthropicStream, StreamingTextResponse } from 'ai';
 import Anthropic from '@anthropic-ai/sdk';
-// Ensure AnthropicStream and StreamingTextResponse are correctly defined and imported.
+// Assume AnthropicStream and StreamingTextResponse are utilities you've defined for handling streaming.
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 });
 
-export const routeHandler = async (req: VercelRequest, res: VercelResponse) => {
+// Simplify the route handler by eliminating the `routeHandler` name and directly exporting it.
+export default async (req: VercelRequest, res: VercelResponse) => {
   try {
-    const { messages } = req.body; // Direct use of 'req.body' assuming Vercel environment.
+    const { messages } = req.body; 
 
-    // Input validation (if necessary)
-    if (!messages || !Array.isArray(messages)) {
+    // Validating the input
+    if (!messages || !Array.isArray(messages) || messages.some(msg => typeof msg.content !== 'string')) {
       return res.status(400).json({ error: 'Invalid message format' });
     }
 
-    // Perform the Anthropic API call
+    // Assuming 'messages' structure fits Anthropic's API requirements
     const response = await anthropic.messages.create({
       messages,
       model: 'claude-2.1',
@@ -24,11 +25,13 @@ export const routeHandler = async (req: VercelRequest, res: VercelResponse) => {
       max_tokens: 300,
     });
 
-    // Handle the response, assuming that AnthropicStream properly wraps the response for Vercel compatibility.
-    const stream = AnthropicStream(response); // Ensure this fits your implementation.
-    
-    // Return the stream as the response, or adapt as necessary for your context.
-    return new StreamingTextResponse(stream); // Adjust based on actual implementation suitability.
+    // Let's assume AnthropicStream modifies or processes 'response' to be sent back properly. 
+    // Ensure this function exists and correctly handles the response for your needs.
+    const stream = AnthropicStream(response);
+
+    // Assuming StreamingTextResponse properly wraps 'stream' for the response.
+    // This part may need adjustment based on your actual StreamingTextResponse implementation.
+    return new StreamingTextResponse(stream);
 
   } catch (error) {
     console.error('Error from Anthropic:', error);
