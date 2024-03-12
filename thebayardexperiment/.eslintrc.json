@@ -10,7 +10,8 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:jsx-a11y/recommended",
     "plugin:prettier/recommended",
-    "prettier"],
+    "prettier"
+  ],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
@@ -24,11 +25,10 @@
     "jsx-a11y",
     "prettier"
   ],
-  "rules": {},
-  "parser": "@typescript-eslint/parser",
   "settings": {
     "react": {
       "version": "18.2.0"
     }
   }
 }
+ 
