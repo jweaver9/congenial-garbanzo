@@ -10,8 +10,7 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:jsx-a11y/recommended",
     "plugin:prettier/recommended",
-    "plugin:eslint-plugin-next/recommended"
-  ],
+    "prettier"],
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true
