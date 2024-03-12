@@ -1,74 +1,61 @@
-"use client";
+'use client';
 
+// Import necessary hooks and libraries
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import OpenAI from 'openai';
-import Anthropic from '@anthropic-ai/sdk';
-import { experimental_buildAnthropicPrompt } from 'ai/prompts';
-import { OpenAIStream, AnthropicStream } from 'ai';
 
+// Define the Message type for consistency
 type Message = {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant';
   content: string;
 };
 
-const openaiClient = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY });
-
-const anthropicClient = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY });
-
-// IMPORTANT! Set the runtime to edge
-export const runtime = 'edge';
-
-
+// The ChatPage component
 const ChatPage = () => {
   const [service, setService] = useState<'openai' | 'anthropic'>('openai');
-  const [input, setInput] = useState<string>('');
+  const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Handle service change
   const handleServiceChange = (newService: 'openai' | 'anthropic') => {
     setService(newService);
   };
 
+  // Handle input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
 
+  // Send message and fetch AI response
   const sendMessage = useCallback(async () => {
     if (!input.trim()) return;
-    
+
     const newMessage: Message = { role: 'user', content: input };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
 
-    const chatMessages = messages.map(msg => ({ role: msg.role, content: msg.content }));
-    
-    if (service === 'openai') {
-      const response = await openaiClient.chat.completions.create({
-        model: 'gpt-3.5-turbo',
-        messages: [...chatMessages, { role: 'user', content: input }, { role: 'assistant', content: '' }, { role: 'system', content: '' }],
-        stream: true,
-        max_tokens: 150
-      });
-      const stream = OpenAIStream(response);
-      // Handle the OpenAI stream
-    } else if (service === 'anthropic') {
-      const prompt = experimental_buildAnthropicPrompt([{ role: 'user', content: input }]);
-      const response = await anthropicClient.completions.create({
-        prompt,
-        model: 'claude',
-        stream: true,
-        max_tokens_to_sample: 150
-      });
-      const stream = AnthropicStream(response);
-      // Handle the Anthropic stream
-    }
+    // Send the message to your API endpoint
+    const response = await fetch('/api/chat', { // Adjust the URL to your API endpoint
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        service,
+        messages: [...messages, newMessage],
+      }),
+    });
 
-    // Placeholder: Add the AI response handling logic here
+    if (response.ok) {
+      const { messages: updatedMessages } = await response.json();
+      setMessages(updatedMessages);
+    } else {
+      console.error('Failed to send message');
+    }
 
     setInput('');
   }, [input, service, messages]);
 
+  // Automatically scroll to the latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -109,5 +96,6 @@ const ChatPage = () => {
       </div>
     </div>
   );
-}
-export default ChatPage; // This line exports the ChatPage component as the default export
+};
+
+export default ChatPage;
