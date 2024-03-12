@@ -17,6 +17,9 @@ const anthropicClient = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || ""
 });
 
+// IMPORTANT! Set the runtime to edge
+export const runtime = 'edge';
+
 export default function ChatPage() {
   const [service, setService] = useState<'openai' | 'anthropic'>('openai');
   const [input, setInput] = useState<string>('');
