@@ -5,7 +5,7 @@ import { OpenAIStream, AnthropicStream } from 'ai';
 
 // Initialize both AI Clients
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
+  apiKey: process.env.OPENAI_API_KEY ,
 });
 
 const anthropic = new Anthropic({
