@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React from 'react';
+import { useChat } from 'ai/react';
 import Card from '@mui/joy/Card';
 import CardContent from '@mui/joy/CardContent';
 import IconButton from '@mui/joy/IconButton';
@@ -9,64 +10,8 @@ import Typography from '@mui/joy/Typography';
 import Stack from '@mui/joy/Stack';
 import Input from '@mui/joy/Input';
 
-// Define the Message type for consistency
-type Message = {
-  role: 'user' | 'assistant' | 's';
-  content: string;
-};
-
-// The ChatPage component
 const ChatPage = () => {
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-  };
-
-  // Send message and fetch AI response
-  const sendMessage = useCallback(async () => {
-    if (!input.trim()) return;
-
-    const newMessage: Message = { role: 'user', content: input };
-    
-    // Add the message to the chat window immediately
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-
-    // Choose endpoint based on needed functionality ("chat" or "completion")
-    const endpoint = '/api/chat'; // Assuming "chat" here; change to "/api/completion" if needed for completion
-    
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [newMessage], // For chat endpoint or { prompt: input } for completion
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-
-      // Assuming the complete messages array is returned
-      const { messages: updatedMessages } = await response.json();
-      setMessages(updatedMessages);
-    } catch (error) {
-        console.error(error);
-    }
-
-    setInput(''); // Clear input field after sending
-  }, [input]);
-
-  // Automatically scroll to the latest message
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
 
   return (
     <div className="container mx-auto p-4">
@@ -84,19 +29,22 @@ const ChatPage = () => {
             </CardContent>
           </Card>
         ))}
-        <div ref={messagesEndRef} />
       </Stack>
-      <Stack direction="row" spacing={2}>
-        <Input
-          value={input}
-          onChange={handleInputChange}
-          placeholder="Type your message..."
-          autoFocus
-          sx={{ flex: 1 }}
-        />
-        <IconButton variant="solid" color="primary" onClick={sendMessage}>
-          <SendIcon />
-        </IconButton>
+      <Stack direction="row" spacing={2} className="mt-4">
+        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+          <Stack direction="row" spacing={2}>
+                <Input
+                  value={input}
+                  onChange={handleInputChange}
+                  placeholder="Type your message..."
+                  autoFocus
+                  sx={{ flex: 1 }}
+                />
+                <IconButton type="submit" variant="solid" color="primary">
+                  <SendIcon />
+                </IconButton>
+          </Stack>
+        </form>
       </Stack>
     </div>
   );
