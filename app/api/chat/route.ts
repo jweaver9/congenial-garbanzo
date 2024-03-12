@@ -1,70 +1,40 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import OpenAI from 'openai';
-import { createClient } from '@supabase/supabase-js';
+import { OpenAI } from 'openai';
 import { OpenAIStream, StreamingTextResponse } from 'ai';
 
-// Supabase Initialization
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
-// OpenAI Initialization
-const openaiApiKey = process.env.OPENAI_API_KEY || '';
-const openaiModel = process.env.OPENAI_MODEL || 'text-davinci-003'; // Update model as needed
-const openai = new OpenAI({ apiKey: openaiApiKey });
-
-export const runtime = 'edge'; // Setting runtime to edge for Vercel
-
-// Assign the arrow function to a variable
-export const chatHandler = async (req: VercelRequest, res: VercelResponse) => {
+export default async function chatHandler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
-    res.status(405).send(`Method ${req.method} Not Allowed`);
+    res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
 
   try {
-    const { messages, sessionId } = req.body;
+    const { messages } = req.body as { messages: Array<{ role: string; content: string }> };
 
-    // OpenAI chat model request
+    // Validate the received messages
+    if (!messages || messages.length === 0) {
+      res.status(400).json({ error: 'No messages provided' });
+      return;
+    }
+
+    // Fetch the chat completion with streaming enabled
     const response = await openai.chat.completions.create({
-      model: openaiModel,
+      model: process.env.OPENAI_MODEL || 'gpt-3.5-turbo',
+      messages: messages as [],
       stream: true,
-      messages: messages.map((msg: { role: any; content: any; }) => ({
-        role: msg.role,
-        content: msg.content,
-        stream: true,
-        max_tokens: 2480, // Limit max tokens to 2480
-      })),
     });
 
-    // Transform the OpenAI response into a readable stream
+    // Transform the response into a readable stream
     const stream = OpenAIStream(response);
-    return new StreamingTextResponse (stream);
-
-    // Asynchronously save messages to Supabase as a side effect
-    messages.push({ role: 'assistant', content: '[AI Response]' }); 
-    messages.push({ role: 'user', content: '[User Response]' });
-    saveMessagesToSupabase(messages, sessionId);
+    return new StreamingTextResponse(stream) 
 
   } catch (error) {
     console.error('Error processing request:', error);
     res.status(500).json({ error: 'An unexpected error occurred' });
-  }
-};
-
-async function saveMessagesToSupabase(messages: any[], sessionId: string) {
-  for (const message of messages) {
-    const { error } = await supabase
-      .from('messages.chatmessages')
-      .insert({
-        session_id: sessionId,
-        message: message.content,
-        role: message.role,
-        timestamp: new Date().toISOString(),
-      });
-
-    if (error) {
-      console.error(`Supabase insert error for session ${sessionId}: ${error.message}`);
-    }
   }
 }
