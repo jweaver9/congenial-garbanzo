@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import dynamic from 'next/dynamic';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { experimental_buildAnthropicPrompt } from 'ai/prompts';
@@ -13,12 +12,16 @@ type Message = {
 };
 
 const openaiClient = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY || "", dangerouslyAllowBrowser: true
 });
 
 const anthropicClient = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || ""
 });
+
+// IMPORTANT! Set the runtime to edge
+export const runtime = 'edge';
+
 
 const ChatPage = () => {
   const [service, setService] = useState<'openai' | 'anthropic'>('openai');
@@ -109,3 +112,4 @@ const ChatPage = () => {
     </div>
   );
 }
+export default ChatPage; // This line exports the ChatPage component as the default export
