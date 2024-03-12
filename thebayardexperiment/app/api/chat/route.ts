@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { OpenAIStream, AnthropicStream } from 'ai';
 import { experimental_buildAnthropicPrompt } from 'ai/prompts';
+import { OpenAIStream, AnthropicStream } from 'ai';
 
 // Initialize both AI Clients
 const openai = new OpenAI({
@@ -23,8 +23,6 @@ export async function POST(req: Request) {
   }
 
   try {
-    let streamResponse;
-
     switch(service) {
       case 'openai':
         const responseOpenAI = await openai.chat.completions.create({
@@ -34,10 +32,10 @@ export async function POST(req: Request) {
           max_tokens: 300,
         });
 
-        // Correctly handle the streaming data from OpenAI's response
-        // Assuming OpenAIStream is a function you've defined to format or process the stream
-        streamResponse = OpenAIStream(responseOpenAI); // Directly pass the entire response
-        break;
+        // Transform and return the OpenAI response
+        // Assuming OpenAIStream handles response data transformation
+        const openAIResponseData = await OpenAIStream(responseOpenAI);
+        return new Response(JSON.stringify(openAIResponseData), { status: 200 });
 
       case 'anthropic':
         const prompt = experimental_buildAnthropicPrompt(messages.map(msg => msg.content));
@@ -48,17 +46,14 @@ export async function POST(req: Request) {
           max_tokens_to_sample: 300,
         });
 
-        // Correctly handle the streaming data from Anthropic's response
-        // Assuming AnthropicStream is a function you've defined to format or process the stream
-        streamResponse = AnthropicStream(responseAnthropic); // Directly pass the entire response
-        break;
+        // Transform and return the Anthropic response
+        // Assuming AnthropicStream handles response data transformation
+        const anthropicResponseData = await AnthropicStream(responseAnthropic);
+        return new Response(JSON.stringify(anthropicResponseData), { status: 200 });
 
       default:
         return new Response(JSON.stringify({ error: 'Unsupported AI service specified.' }), { status: 400 });
     }
-
-    // Ensure streamResponse is formatted correctly for your use case
-    return streamResponse;
   } catch (error) {
     console.error('Error handling request:', error);
     return new Response(JSON.stringify({ error: 'ServerError', message: 'An error occurred while processing your request.' }), { status: 500 });
