@@ -3,6 +3,8 @@
 // Import necessary hooks and libraries
 import React, { useState, useEffect, useCallback, useRef, ChangeEvent } from 'react';
 import { Button, Input, TextField } from '@mui/joy';
+import '@fontsource-variable/lexend'
+
 
 // Define the Message type for consistency
 type Message = {
