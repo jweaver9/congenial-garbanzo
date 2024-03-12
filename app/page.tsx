@@ -1,6 +1,3 @@
-'use client';
-
-// Import necessary hooks, libraries, and icons
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Card from '@mui/joy/Card';
 import CardContent from '@mui/joy/CardContent';
@@ -8,11 +5,11 @@ import IconButton from '@mui/joy/IconButton';
 import SendIcon from '@mui/icons-material/Send';
 import Typography from '@mui/joy/Typography';
 import Stack from '@mui/joy/Stack';
-import { Input } from '@mui/joy';
+import Input from '@mui/joy/Input';
 
 // Define the Message type for consistency
 type Message = {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
 };
 
@@ -30,29 +27,38 @@ const ChatPage = () => {
   // Send message and fetch AI response
   const sendMessage = useCallback(async () => {
     if (!input.trim()) return;
-    
+
     const newMessage: Message = { role: 'user', content: input };
+    
+    // Add the message to the chat window immediately
     setMessages((prevMessages) => [...prevMessages, newMessage]);
 
-    // Adjust the URL to your API endpoint
-    const response = await fetch('/api/v1/chat/completions', { // Use the correct endpoint here
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: input,
-      }),
-    });
+    // Choose endpoint based on needed functionality ("chat" or "completion")
+    const endpoint = '/api/chat'; // Assuming "chat" here; change to "/api/completion" if needed for completion
+    
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [newMessage], // For chat endpoint or { prompt: input } for completion
+        }),
+      });
 
-    if (response.ok) {
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      // Assuming the complete messages array is returned
       const { messages: updatedMessages } = await response.json();
       setMessages(updatedMessages);
-    } else {
-      console.error('Failed to send message');
+    } catch (error) {
+        console.error(error);
     }
 
-    setInput('');
+    setInput(''); // Clear input field after sending
   }, [input]);
 
   // Automatically scroll to the latest message
