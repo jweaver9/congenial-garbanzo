@@ -31,7 +31,7 @@ const ChatPage = () => {
     setMessages((prevMessages) => [...prevMessages, newMessage]);
 
     // Send the message to your API endpoint
-    const response = await fetch('/api/chat', { // Adjust the URL to your API endpoint
+    const response = await fetch('https://api.openai.com/v1/chat/completions', { // Adjust the URL to your API endpoint
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
