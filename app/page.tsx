@@ -1,73 +1,108 @@
-// Ensure "use client" is correctly placed if needed, depending on your setup.
-"use client";
-import next from "next";
-import React, { useState, useEffect, useRef } from "react";
-import useChat from "ai/react";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
+import { experimental_buildAnthropicPrompt } from 'ai/prompts';
+import { OpenAIStream, AnthropicStream } from 'ai';
 
-function ChatComponent() {
-  const [selectedModel, setSelectedModel] = useState<string>('openai');
+type Message = {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+};
+
+const openaiClient = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+const anthropicClient = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY || ""
+});
+
+export default function ChatPage() {
+  const [service, setService] = useState<'openai' | 'anthropic'>('openai');
   const [input, setInput] = useState<string>('');
-  const [messages, setMessages] = useState<Array<{ role: string, content: string }>>([]);
-  const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleServiceChange = (newService: 'openai' | 'anthropic') => {
+    setService(newService);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
 
-  const handleSubmitWithModel = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); 
-    // Your submission logic here
-    console.log("Form submitted with model:", selectedModel, "and input:", input);
-    // Reset input field after submission
+  const sendMessage = useCallback(async () => {
+    if (!input.trim()) return;
+    
+    const newMessage: Message = { role: 'user', content: input };
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+
+    const chatMessages = messages.map(msg => ({ role: msg.role, content: msg.content }));
+    
+    if (service === 'openai') {
+      const response = await openaiClient.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [...chatMessages, { role: 'user', content: input }, { role: 'assistant', content: '' }, { role: 'system', content: '' }],
+        stream: true,
+        max_tokens: 150
+      });
+      const stream = OpenAIStream(response);
+      // Handle the OpenAI stream
+    } else if (service === 'anthropic') {
+      const prompt = experimental_buildAnthropicPrompt([{ role: 'user', content: input }]);
+      const response = await anthropicClient.completions.create({
+        prompt,
+        model: 'claude',
+        stream: true,
+        max_tokens_to_sample: 150
+      });
+      const stream = AnthropicStream(response);
+      // Handle the Anthropic stream
+    }
+
+    // Placeholder: Add the AI response handling logic here
+
     setInput('');
-  };
+  }, [input, service, messages]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   return (
-    <div className="p-4">
-      <h2 className="text-lg font-semibold">Chat with AI</h2>
-      {/* Model selection toggle */}
-      <div className="flex justify-center gap-4 my-4">
-        {["openai", "anthropic"].map((model) => (
-          <label key={model} className="flex items-center cursor-pointer">
-            <input
-              type="radio"
-              name="aiModel"
-              value={model}
-              checked={selectedModel === model}
-              onChange={() => setSelectedModel(model)}
-              className="mr-2"
-            />
-            {model.charAt(0).toUpperCase() + model.slice(1)}
-          </label>
-        ))}
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">Chat with AI</h1>
+      <div className="flex justify-around mb-4">
+        <button onClick={() => handleServiceChange('openai')} 
+                className={`py-2 px-4 rounded ${service === 'openai' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
+          OpenAI
+        </button>
+        <button onClick={() => handleServiceChange('anthropic')} 
+                className={`py-2 px-4 rounded ${service === 'anthropic' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
+          Anthropic
+        </button>
       </div>
-
-      <div className="chat-messages h-96 overflow-auto mb-4 p-4 bg-gray-50">
+      <div className="chat-messages h-96 overflow-auto mb-4 bg-gray-100 rounded p-4">
         {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`message ${message.role === "user" ? "user" : "ai"}`}
-          >
-            {message.role === "user" ? "You: " : "AI: "}
+          <div key={index} className={`message ${message.role === 'user' ? 'text-right' : ''}`}>
+            {message.role === 'user' ? 'You: ' : 'AI: '}
             {message.content}
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
-
-      <form onSubmit={handleSubmitWithModel} className="chat-input">
+      <div className="flex">
         <input
-          className="w-full p-2 border rounded"
+          type="text"
           value={input}
           onChange={handleInputChange}
           placeholder="Type your message..."
+          className="flex-1 border p-2 rounded mr-2"
         />
-        <button className="p-2 border rounded" type="submit">
+        <button onClick={sendMessage} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           Send
         </button>
-      </form>
+      </div>
     </div>
   );
 }
-
-export default ChatComponent;
