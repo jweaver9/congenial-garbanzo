@@ -1,17 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useChat } from "ai/react";
+import useChat from "ai/react";
 
-export default function Chat() {
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
-  const [selectedModel, setSelectedModel] = useState("openai");
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   const handleSubmitWithModel = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent default form action
@@ -70,3 +61,7 @@ export default function Chat() {
     </div>
   );
 }
+function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  throw new Error("Function not implemented.");
+}
+
