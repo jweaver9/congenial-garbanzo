@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { experimental_buildAnthropicPrompt } from 'ai/prompts';
@@ -17,10 +18,7 @@ const anthropicClient = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || ""
 });
 
-// IMPORTANT! Set the runtime to edge
-export const runtime = 'edge';
-
-export default function ChatPage() {
+const ChatPage = () => {
   const [service, setService] = useState<'openai' | 'anthropic'>('openai');
   const [input, setInput] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -109,3 +107,6 @@ export default function ChatPage() {
     </div>
   );
 }
+export default dynamic(() => Promise.resolve(ChatPage), {
+  ssr: false,
+});
