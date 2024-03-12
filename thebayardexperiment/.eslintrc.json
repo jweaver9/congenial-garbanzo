@@ -10,7 +10,7 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:jsx-a11y/recommended",
     "plugin:prettier/recommended",
-    "next"
+    "plugin:eslint-plugin-next/recommended"
   ],
   "parserOptions": {
     "ecmaFeatures": {
