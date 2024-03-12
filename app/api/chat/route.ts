@@ -15,10 +15,6 @@ const openai = new OpenAI({
   apiKey: openaiApiKey,
 });
 
-export const config = {
-  runtime: "experimental-edge", // Ensure compatibility with Vercel Edge Functions
-};
-
 export default async function handler(req: Request) {
   if (req.method === 'POST') {
     try {
