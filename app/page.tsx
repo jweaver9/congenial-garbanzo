@@ -12,12 +12,10 @@ type Message = {
 };
 
 const openaiClient = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "", dangerouslyAllowBrowser: true
-});
+  apiKey: process.env.OPENAI_API_KEY });
 
 const anthropicClient = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || ""
-});
+  apiKey: process.env.ANTHROPIC_API_KEY });
 
 // IMPORTANT! Set the runtime to edge
 export const runtime = 'edge';
