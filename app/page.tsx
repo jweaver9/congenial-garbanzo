@@ -1,23 +1,40 @@
-"use client";
+// Ensure "use client" is correctly placed if needed, depending on your setup.
+// It seems to be part of a directive or comment that might be specific to your environment or build tool.
 
 import React, { useState, useEffect, useRef } from "react";
-import useChat from "ai/react";
+import { useChat } from "ai/react";
+import { UseChatHelpers } from "ai/react"; // Import the UseChatHelpers type.
 
+// Assuming useChat is a custom hook that provides state and functionality for chatting,
+// including message state, input handling, and potentially submitting messages.
+
+const ChatPage = () => {
+  // Add the 'selectedModel' property to the UseChatHelpers type
+  interface UseChatHelpersWithModel extends UseChatHelpers {
+    selectedModel: string;
+    setSelectedModel: React.Dispatch<React.SetStateAction<string>>;
+  }
+
+  const { messages, input, handleInputChange, handleSubmit, selectedModel, setSelectedModel } = useChat() as UseChatHelpersWithModel; // Cast the useChat() result to UseChatHelpersWithModel
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const handleSubmitWithModel = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Prevent default form action
-    // Integrate model selection logic here, potentially by setting global state, context, or directly invoking an API with both `input` and `selectedModel` as parameters.
-    // Since the originalHandleSubmit cannot be modified to accept additional parameters directly, the integration or handling of the model must occur elsewhere.
-
-    // Use original handleSubmit for now to continue normal operation
-    handleSubmit(e); // Assuming this triggers message sending without needing `input` directly.
-    // In scenarios where the `input` is needed, consider rethinking how the `useChat` setup can allow for additional parameters or look to handle the form submission differently.
+    e.preventDefault(); // Prevent default form submission action.
+    
+    // Your custom logic for model selection and message submission here.
+    // This might involve using the selectedModel state to determine how to submit the message.
+    handleSubmit(e); // This should be the method provided by useChat for submitting messages.
   };
+
+  useEffect(() => {
+    // Logic to scroll to the bottom of the message list every time the messages update.
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
     <div className="p-4">
       <h2 className="text-lg font-semibold">Chat with AI</h2>
-      {/* Model selection toggle */}
       <div className="flex justify-center gap-4 my-4">
         {["openai", "anthropic"].map((model) => (
           <label key={model} className="flex items-center cursor-pointer">
@@ -35,13 +52,10 @@ import useChat from "ai/react";
       </div>
 
       <div className="chat-messages h-96 overflow-auto mb-4 p-4 bg-gray-50">
-        {messages.map((m, index) => (
-          <div
-            key={index}
-            className={`message ${m.role === "user" ? "user" : "ai"}`}
-          >
-            {m.role === "user" ? "You: " : "AI: "}
-            {m.content}
+        {messages.map((message, index) => (
+          <div key={index} className={`message ${message.role === "user" ? "user" : "ai"}`}>
+            {message.role === "user" ? "You: " : "AI: "}
+            {message.content}
           </div>
         ))}
         <div ref={messagesEndRef} />
@@ -60,8 +74,8 @@ import useChat from "ai/react";
       </form>
     </div>
   );
-}
-function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-  throw new Error("Function not implemented.");
-}
+};
 
+export default ChatPage;
+
+// Assuming the original `handleSubmit` was a placeholder for your actual submit logic within useChat.
