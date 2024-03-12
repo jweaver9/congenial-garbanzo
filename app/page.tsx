@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import OpenAI from 'openai';
@@ -107,6 +109,3 @@ const ChatPage = () => {
     </div>
   );
 }
-export default dynamic(() => Promise.resolve(ChatPage), {
-  ssr: false,
-});
