@@ -6,7 +6,7 @@
   },
   "extends": [
     "eslint:recommended",
-    "plugin:@next/eslint-plugin-next",
+    "plugin:@next/eslint-plugin",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:jsx-a11y/recommended",
