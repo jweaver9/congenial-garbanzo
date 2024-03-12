@@ -2,14 +2,15 @@
   "env": {
     "browser": true,
     "es2021": true,
-    "node": true // Added "node" environment
+    "node": true
   },
   "extends": [
     "eslint:recommended",
+    "plugin:next",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:jsx-a11y/recommended", // Added "jsx-a11y" plugin
-    "plugin:prettier/recommended" // Added "prettier" plugin
+    "plugin:jsx-a11y/recommended",
+    "plugin:prettier/recommended"
   ],
   "parserOptions": {
     "ecmaFeatures": {
@@ -21,9 +22,14 @@
   "plugins": [
     "react",
     "@typescript-eslint",
-    "jsx-a11y", // Added "jsx-a11y" plugin
-    "prettier" // Added "prettier" plugin
+    "jsx-a11y",
+    "prettier"
   ],
   "rules": {},
-  "parser": "@typescript-eslint/parser"
+  "parser": "@typescript-eslint/parser",
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
 }

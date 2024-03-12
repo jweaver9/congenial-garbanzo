@@ -1,6 +1,6 @@
 // metadata.ts
 
-import type { UrlObject } from 'url';
+import type { UrlObject } from "url";
 
 // Define the parts of the metadata that have static types.
 interface Author {
@@ -38,30 +38,31 @@ interface ExtendedMetadata {
 }
 
 // Correct the way environment variables are used and string interpolation for default URL
-const metadataBase: URL = new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+const metadataBase: URL = new URL(
+  process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000",
+);
 
 // Construct the full metadata object
 const metadata: ExtendedMetadata = {
-  title: 'THE BAYARD EXPERIMENT',
-  description: 'A conceptual project.',
+  title: "THE BAYARD EXPERIMENT",
+  description: "A conceptual project.",
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon-16x16.png',
-    apple: '/apple-touch-icon.png'
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    images: '/og-image.png',
+    images: "/og-image.png",
   },
-  generator: 'Next.js',
-  applicationName: 'Next.js',
-  referrer: 'origin-when-cross-origin',
-  keywords: ['Next.js', 'React', 'JavaScript'],
-  authors: [
-    { name: 'Seb' },
-    { name: 'Josh', url: 'https://nextjs.org' }
-  ],
-  creator: 'Jiachi Liu',
-  publisher: 'Sebastian Markbåge',
+  generator: "Next.js",
+  applicationName: "Next.js",
+  referrer: "origin-when-cross-origin",
+  keywords: ["Next.js", "React", "JavaScript"],
+  authors: [{ name: "Seb" }, { name: "Josh", url: "https://nextjs.org" }],
+  creator: "Jiachi Liu",
+  publisher: "Sebastian Markbåge",
   formatDetection: {
     email: false,
     address: false,
