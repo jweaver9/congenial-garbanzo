@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Card from '@mui/joy/Card';
 import CardContent from '@mui/joy/CardContent';
@@ -9,7 +11,7 @@ import Input from '@mui/joy/Input';
 
 // Define the Message type for consistency
 type Message = {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 's';
   content: string;
 };
 
