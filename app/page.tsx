@@ -1,48 +1,55 @@
+// page.tsx
+
 'use client';
 
 import React from 'react';
 import { useChat } from 'ai/react';
 import Card from '@mui/joy/Card';
 import CardContent from '@mui/joy/CardContent';
-import IconButton from '@mui/joy/IconButton';
-import SendIcon from '@mui/icons-material/Send';
 import Typography from '@mui/joy/Typography';
 import Stack from '@mui/joy/Stack';
-import Input  from '@mui/joy/Input'; 
+import Input from '@mui/joy/Input';
+import Button from '@mui/joy/Button';
 
 export default function ChatPage() {
   const { messages, input, handleInputChange, handleSubmit } = useChat();
+
   return (
-    <div className="container mx-auto p-4">
-      <Typography level="h4" component="h1" sx={{ mb: 2 }}>
-        Chat with AI
-      </Typography>
-      <Stack spacing={2} className="chat-messages overflow-auto mb-4 bg-gray-100 rounded p-4" sx={{ maxHeight: '80vh' }}>
-        {messages.map((message, index) => (
-          <Card key={index} variant="outlined" sx={{ alignSelf: message.role === 'user' ? 'end' : 'start' }}>
-            <CardContent>
-              <Typography level="body-sm">
-                {message.role === 'user' ? 'You: ' : 'AI: '}
-                {message.content}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </Stack>
-      <form onSubmit={handleSubmit} className="fixed bottom-0 left-0 right-0 p-2">
-        <Stack direction="row" spacing={2}>
+    <div className="flex flex-col h-screen bg-[#240647]">
+      <header className="flex justify-between items-center p-4">
+        <div className="text-[#E9D6FF] text-lg font-bold">My Account</div>
+      </header>
+
+      <main className="flex-1 overflow-auto p-4">
+        <Stack spacing={2}>
+          {messages.map((message, index) => (
+            <Card key={index} variant="outlined" sx={{ alignSelf: message.role === 'user' ? 'end' : 'start' }}>
+              <CardContent>
+                <Typography sx={{ color: message.role === 'user' ? 'white' : '#B17CEE', fontSize: 18 }}>
+                  {message.role === 'user' ? 'You: ' : 'AI: '}
+                  {message.content}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))}
+        </Stack>
+      </main>
+
+      <footer className="p-4">
+        <form onSubmit={handleSubmit} className="flex space-x-2">
           <Input
             fullWidth
             value={input}
             onChange={handleInputChange}
-            placeholder="Type your message..."
-            size="md"
+            placeholder="Ask me something..."
+            size="lg"
+            sx={{ color: 'white', fontSize: 18 }}
           />
-          <IconButton type="submit" variant="solid" color="primary">
-            <SendIcon />
-          </IconButton>
-        </Stack>
-      </form>
+          <Button type="submit" variant="solid" color="primary" sx={{ backgroundColor: '#B17CEE', '&:hover': { backgroundColor: '#9564CD' } }}>
+            Send
+          </Button>
+        </form>
+      </footer>
     </div>
   );
 }
