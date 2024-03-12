@@ -31,9 +31,10 @@ export async function POST(req: Request) {
   }
 
   try {
+    let response;
     switch (service) {
       case "openai":
-        const responseOpenAI = await openai.chat.completions.create({
+        response = await openai.chat.completions.create({
           model: "text-davinci-003",
           messages: messages.map((msg) => ({
             role: msg.role,
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
 
         // Transform and return the OpenAI response
         // Assuming OpenAIStream handles response data transformation
-        const openAIResponseData = await OpenAIStream(responseOpenAI);
+        const openAIResponseData = await OpenAIStream(response);
         return new Response(JSON.stringify(openAIResponseData), {
           status: 200,
         });
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
         const prompt = experimental_buildAnthropicPrompt(
           messages.map((msg) => msg.content),
         );
-        const responseAnthropic = await anthropic.completions.create({
+        response = await anthropic.completions.create({
           prompt,
           model: "claude-2",
           stream: true,
@@ -63,7 +64,7 @@ export async function POST(req: Request) {
 
         // Transform and return the Anthropic response
         // Assuming AnthropicStream handles response data transformation
-        const anthropicResponseData = await AnthropicStream(responseAnthropic);
+        const anthropicResponseData = await AnthropicStream(response);
         return new Response(JSON.stringify(anthropicResponseData), {
           status: 200,
         });
