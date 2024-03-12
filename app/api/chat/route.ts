@@ -16,7 +16,7 @@ const openai = new OpenAI({
 });
 
 export const config = {
-  runtime: 'experimental-edge', // Ensure compatibility with Vercel Edge Functions
+  runtime: "experimental-edge", // Ensure compatibility with Vercel Edge Functions
 };
 
 export default async function handler(req: Request) {
