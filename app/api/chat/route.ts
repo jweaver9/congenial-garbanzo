@@ -12,14 +12,14 @@ const openai = new OpenAI({
   apiKey: openaiApiKey,
 });
 
-async function chatHandler(req: { method: string; json: () => PromiseLike<{ messages: any; sessionId: any; }> | { messages: any; sessionId: any; }; }, res: { status: (arg0: number) => { (): any; new(): any; json: { (arg0: { messages?: any[]; error?: string; }): void; new(): any; }; end: { (arg0: string): void; new(): any; }; }; setHeader: (arg0: string, arg1: string[]) => void; }) {
+async function chatHandler(req, res) {
   if (req.method === 'POST') {
     try {
       const { messages, sessionId } = await req.json();
 
-      const response = await openai.chat.completions.create({
+      const response = await openai.chat.completions({
         model: openaiModel,
-        messages: messages.map((msg: { role: any; content: any; }) => ({
+        messages: messages.map((msg) => ({
           role: msg.role,
           content: msg.content,
         })),
@@ -27,7 +27,7 @@ async function chatHandler(req: { method: string; json: () => PromiseLike<{ mess
 
       const aiMessage = {
         role: 'assistant',
-        content: response.choices[0].message.content,
+        content: response.data.choices[0].message.content,
       };
 
       await Promise.all(

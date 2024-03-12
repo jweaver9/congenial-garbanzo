@@ -1,8 +1,15 @@
 'use client';
 
-// Import necessary hooks and libraries
-import React, { useState, useEffect, useCallback, useRef, KeyboardEvent } from 'react';
-import { Button, Input } from '@mui/joy';
+// Import necessary hooks, libraries, and icons
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Card from '@mui/joy/Card';
+import CardContent from '@mui/joy/CardContent';
+import TextField from '@mui/joy/TextField';
+import IconButton from '@mui/joy/IconButton';
+import SendIcon from '@mui/icons-material/Send';
+import Typography from '@mui/joy/Typography';
+import Stack from '@mui/joy/Stack';
+import { Input } from '@mui/joy';
 
 // Define the Message type for consistency
 type Message = {
@@ -24,7 +31,7 @@ const ChatPage = () => {
   // Send message and fetch AI response
   const sendMessage = useCallback(async () => {
     if (!input.trim()) return;
-
+    
     const newMessage: Message = { role: 'user', content: input };
     setMessages((prevMessages) => [...prevMessages, newMessage]);
 
@@ -49,14 +56,6 @@ const ChatPage = () => {
     setInput('');
   }, [input]);
 
-  // Handle Enter key press to send messages
-  const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      sendMessage();
-    }
-  };
-
   // Automatically scroll to the latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -64,28 +63,34 @@ const ChatPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4">Chat with AI</h1>
-      <div className="chat-messages h-96 overflow-auto mb-4 bg-gray-100 rounded p-4">
+      <Typography level="h4" component="h1" sx={{ mb: 2 }}>
+        Chat with AI
+      </Typography>
+      <Stack spacing={2} className="chat-messages h-96 overflow-auto mb-4 bg-gray-100 rounded p-4">
         {messages.map((message, index) => (
-          <div key={index} className={`message ${message.role === 'user' ? 'text-right' : ''}`}>
-            {message.role === 'user' ? 'You: ' : 'AI: '}
-            {message.content}
-          </div>
+          <Card key={index} variant="outlined" sx={{ alignSelf: message.role === 'user' ? 'end' : 'start' }}>
+            <CardContent>
+              <Typography level="body-sm">
+                {message.role === 'user' ? 'You: ' : 'AI: '}
+                {message.content}
+              </Typography>
+            </CardContent>
+          </Card>
         ))}
         <div ref={messagesEndRef} />
-      </div>
-      <div className="flex">
+      </Stack>
+      <Stack direction="row" spacing={2}>
         <Input
           value={input}
           onChange={handleInputChange}
-          onKeyPress={handleKeyPress}
           placeholder="Type your message..."
-          className="flex-1 border p-2 rounded mr-2"
+          autoFocus
+          sx={{ flex: 1 }}
         />
-        <Button onClick={sendMessage} color="primary">
-          Send
-        </Button>
-      </div>
+        <IconButton variant="solid" color="primary" onClick={sendMessage}>
+          <SendIcon />
+        </IconButton>
+      </Stack>
     </div>
   );
 };
