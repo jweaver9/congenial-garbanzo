@@ -3,15 +3,21 @@ import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { OpenAIStream, AnthropicStream } from "ai"; // Adjust based on actual import paths
 import { experimental_buildAnthropicPrompt } from "ai/prompts"; // Adjust based on actual import paths
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
+
+type Message = {
+  role: string;
+  content: string;
+};
 
 export async function handleOpenAIRequest(
-  messages: any[],
+  messages: ChatCompletionMessageParam[], // Update the type of the 'messages' parameter
   openaiClient: OpenAI,
 ) {
   // Note: Ensure the model, stream, and max_tokens settings are aligned with your application's requirements
   const response = await openaiClient.chat.completions.create({
     model: "text-davinci-003",
-    messages: messages.map((msg) => ({ role: msg.role, content: msg.content })),
+    messages,
     stream: true,
     max_tokens: 300,
   });
@@ -21,11 +27,11 @@ export async function handleOpenAIRequest(
 }
 
 export async function handleAnthropicRequest(
-  messages: any[],
+  messages: Message[],
   anthropicClient: Anthropic,
 ) {
   const prompt = experimental_buildAnthropicPrompt(
-    messages.map((msg) => msg.content),
+    messages.map((msg) => ({ role: "user", content: msg.content })),
   );
   const response = await anthropicClient.completions.create({
     prompt,
