@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "globalEnv": [
+    "NEXT_PUBLIC_PLAUSIBLE_DATA_DOMAIN",
+    "NEXT_PUBLIC_IS_LATEST",
+    "NEXT_PUBLIC_IS_CANARY",
+    "VERCEL_GIT_COMMIT_REF",
+    "NEXT_PUBLIC_BASE_URL",
+    "NODE_ENV"
+  ],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "lint": {},
+    "test": {},
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
